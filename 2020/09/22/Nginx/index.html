@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Nginx总结 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Author：Eric version：9.0.1  [TOC] 一、引言 1.1 代理问题 客户端到底要将请求发送给哪台服务器。     发送给服务器1还是服务器2       1.2 负载均衡问题 如果所有客户端的请求都发送给了服务器1，那么服务器2将没有任何意义     负载均衡问题       1.3 资源优化 客户端发送的请求可能是申请动态资源的，也有申请静态资源，但是都是去Tomc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nginx总结">
+<meta property="og:url" content="http://example.com/2020/09/22/Nginx/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Author：Eric version：9.0.1  [TOC] 一、引言 1.1 代理问题 客户端到底要将请求发送给哪台服务器。     发送给服务器1还是服务器2       1.2 负载均衡问题 如果所有客户端的请求都发送给了服务器1，那么服务器2将没有任何意义     负载均衡问题       1.3 资源优化 客户端发送的请求可能是申请动态资源的，也有申请静态资源，但是都是去Tomc">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2020/09/22/Nginx/Pictures/Nginx.png">
+<meta property="og:image" content="http://example.com/2020/09/22/Nginx/Pictures/1589264952529.png">
+<meta property="og:image" content="http://example.com/2020/09/22/Nginx/Pictures/1589265005701.png">
+<meta property="og:image" content="http://example.com/2020/09/22/Nginx/Pictures/1589265063451.png">
+<meta property="og:image" content="http://example.com/2020/09/22/Nginx/Pictures/1589265181473.png">
+<meta property="og:image" content="http://example.com/2020/09/22/Nginx/Pictures/1586502874584.png">
+<meta property="og:image" content="http://example.com/2020/09/22/Nginx/Pictures/1586512751639.png">
+<meta property="og:image" content="http://example.com/2020/09/22/Nginx/Pictures/1586513061851.png">
+<meta property="og:image" content="http://example.com/2020/09/22/Nginx/Pictures/1588755548570.png">
+<meta property="article:published_time" content="2020-09-22T13:09:52.207Z">
+<meta property="article:modified_time" content="2020-09-22T13:10:37.964Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2020/09/22/Nginx/Pictures/Nginx.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Nginx" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/09/22/Nginx/" class="article-date">
+  <time datetime="2020-09-22T13:09:52.207Z" itemprop="datePublished">2020-09-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Nginx总结
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><img src="Pictures/Nginx.png" alt="1586499306778"></p>
+<blockquote>
+<p>Author：Eric</p>
+<p>version：9.0.1</p>
+</blockquote>
+<p>[TOC]</p>
+<h3 id="一、引言"><a href="#一、引言" class="headerlink" title="一、引言"></a>一、引言</h3><hr>
+<h4 id="1-1-代理问题"><a href="#1-1-代理问题" class="headerlink" title="1.1 代理问题"></a>1.1 代理问题</h4><blockquote>
+<p>客户端到底要将请求发送给哪台服务器。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="center">发送给服务器1还是服务器2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="Pictures/1589264952529.png" alt="1589264952529"></td>
+</tr>
+</tbody></table>
+<h4 id="1-2-负载均衡问题"><a href="#1-2-负载均衡问题" class="headerlink" title="1.2 负载均衡问题"></a>1.2 负载均衡问题</h4><blockquote>
+<p>如果所有客户端的请求都发送给了服务器1，那么服务器2将没有任何意义</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="center">负载均衡问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="Pictures/1589265005701.png" alt="1589265005701"></td>
+</tr>
+</tbody></table>
+<h4 id="1-3-资源优化"><a href="#1-3-资源优化" class="headerlink" title="1.3 资源优化"></a>1.3 资源优化</h4><blockquote>
+<p>客户端发送的请求可能是申请动态资源的，也有申请静态资源，但是都是去Tomcat中获取的</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="center">静态资源访问</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="Pictures/1589265063451.png" alt="1589265063451"></td>
+</tr>
+</tbody></table>
+<h4 id="1-4-Nginx处理"><a href="#1-4-Nginx处理" class="headerlink" title="1.4 Nginx处理"></a>1.4 Nginx处理</h4><table>
+<thead>
+<tr>
+<th align="center">在搭建集群后，使用Nginx</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="Pictures/1589265181473.png" alt="1589265181473"></td>
+</tr>
+</tbody></table>
+<h3 id="二、Nginx概述"><a href="#二、Nginx概述" class="headerlink" title="二、Nginx概述"></a>二、Nginx概述</h3><hr>
+<blockquote>
+<p>Nginx是由俄罗斯人研发的，应对Rambler的网站，并且2004年发布的第一个版本。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="center">Nginx之父</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="Pictures/1586502874584.png" alt="1586502874584"></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>Nginx的特点：</p>
+<ul>
+<li>稳定性极强。 7*24小时不间断运行。</li>
+<li>Nginx提供了非常丰富的配置实例。</li>
+<li>占用内存小，并发能力强。</li>
+</ul>
+</blockquote>
+<h3 id="三、Nginx的安装"><a href="#三、Nginx的安装" class="headerlink" title="三、Nginx的安装"></a>三、Nginx的安装</h3><hr>
+<h4 id="3-1-安装Nginx"><a href="#3-1-安装Nginx" class="headerlink" title="3.1 安装Nginx"></a>3.1 安装Nginx</h4><blockquote>
+<p>使用Docker-Compose安装</p>
+</blockquote>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&#x27;3.1&#x27;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">nginx:</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">always</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">daocloud.io/library/nginx:latest</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">nginx</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">80</span><span class="string">:80</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="3-2-Nginx的配置文件"><a href="#3-2-Nginx的配置文件" class="headerlink" title="3.2 Nginx的配置文件"></a>3.2 Nginx的配置文件</h4><blockquote>
+<p>关于Nginx的核心配置文件nginx.conf</p>
+</blockquote>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">worker_processes  1;		</span><br><span class="line">error_log  /var/log/nginx/error.log warn;</span><br><span class="line"># 以上统称为全局块， </span><br><span class="line"># worker_processes他的数值越大，Nginx的并发能力就越强</span><br><span class="line"># error_log 代表Nginx的错误日志存放的位置</span><br><span class="line"></span><br><span class="line">events &#123;</span><br><span class="line">    worker_connections  1024;</span><br><span class="line">&#125;</span><br><span class="line"># events块</span><br><span class="line"># worker_connections他的数值越大，Nignx并发能力越强</span><br><span class="line"></span><br><span class="line">http &#123;</span><br><span class="line">    include       /etc/nginx/mime.types;</span><br><span class="line">    default_type  application/octet-stream;</span><br><span class="line">    server &#123;</span><br><span class="line">        listen       80;</span><br><span class="line">        server_name  localhost;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">            root   /usr/share/nginx/html;</span><br><span class="line">            index  index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line">		# location块</span><br><span class="line">		# root：将接收到的请求根据/usr/share/nginx/html去查找静态资源</span><br><span class="line">		# index： 默认去上述的路径中找到index.html或者index.htm</span><br><span class="line">    &#125;</span><br><span class="line">	# server块</span><br><span class="line">	# listen： 代表Nginx监听的端口号</span><br><span class="line">	# localhost：代表Nginx接收请求的ip</span><br><span class="line">&#125;</span><br><span class="line"># http块</span><br><span class="line"># include代表引入一个外部的文件 -&gt; /mime.types中放着大量的媒体类型</span><br><span class="line"># include /etc/nginx/conf.d/*.conf; -&gt; 引入了conf.d目录下的以.conf为结尾的配置文件</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="3-3-修改docker-compose文件"><a href="#3-3-修改docker-compose文件" class="headerlink" title="3.3 修改docker-compose文件"></a>3.3 修改docker-compose文件</h4><blockquote>
+<p>为了方便修改Nginx配置，修改yml文件</p>
+</blockquote>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&#x27;3.1&#x27;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">nginx:</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">always</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">daocloud.io/library/nginx:latest</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">nginx</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">80</span><span class="string">:80</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">/opt/docker_nginx/conf.d/:/etc/nginx/conf.d</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="四、Nginx的反向代理【重点】"><a href="#四、Nginx的反向代理【重点】" class="headerlink" title="四、Nginx的反向代理【重点】"></a>四、Nginx的反向代理【<code>重点</code>】</h3><hr>
+<h4 id="4-1-正向代理和反向代理介绍"><a href="#4-1-正向代理和反向代理介绍" class="headerlink" title="4.1 正向代理和反向代理介绍"></a>4.1 正向代理和反向代理介绍</h4><blockquote>
+<p>正向代理：</p>
+<ul>
+<li>正向代理服务是由客户端设立的。</li>
+<li>客户端了解代理服务器和目标服务器都是谁。</li>
+<li>帮助咱们实现突破访问权限，提高访问的速度，对目标服务器隐藏客户端的ip地址。</li>
+</ul>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="center">正向代理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="Pictures/1586512751639.png" alt="1586512751639"></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>反向代理：</p>
+<ul>
+<li>反向代理服务器是配置在服务端的。</li>
+<li>客户端是不知道访问的到底是哪一台服务器。</li>
+<li>达到负载均衡，并且可以隐藏服务器真正的ip地址。</li>
+</ul>
+</blockquote>
+<p><img src="Pictures/1586513061851.png" alt="1586513061851"></p>
+<h4 id="4-2-基于Nginx实现反向代理"><a href="#4-2-基于Nginx实现反向代理" class="headerlink" title="4.2 基于Nginx实现反向代理"></a>4.2 基于Nginx实现反向代理</h4><blockquote>
+<p>准备一个目标服务器。</p>
+<p>启动了之前的tomcat服务器。</p>
+<p>编写nginx的配置文件，通过Nginx访问到tomcat服务器。</p>
+</blockquote>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">server&#123;</span><br><span class="line">  listen 80;</span><br><span class="line">  server_name localhost;</span><br><span class="line">    # 基于反向代理访问到Tomcat服务器</span><br><span class="line">  location / &#123;</span><br><span class="line">    proxy_pass http://192.168.199.109:8080/;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="4-3-关于Nginx的location路径映射"><a href="#4-3-关于Nginx的location路径映射" class="headerlink" title="4.3 关于Nginx的location路径映射"></a>4.3 关于Nginx的location路径映射</h4><blockquote>
+<p>优先级关系如下：</p>
+</blockquote>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"># 1. 直接匹配</span><br><span class="line">location = / &#123;</span><br><span class="line">  # 精准匹配，主机名后面不能带任何的字符串</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># 2. 通用匹配</span><br><span class="line">location /xxx &#123;</span><br><span class="line">  # 匹配所有以/xxx开头的路径</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># 3. 正则匹配</span><br><span class="line">location ~ /xxx &#123;</span><br><span class="line">  # 匹配所有以/xxx开头的路径</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># 4. 匹配开头路径</span><br><span class="line">location ^~ /images/ &#123;</span><br><span class="line">  # 匹配所有以/images开头的路径</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># 5. 匹配后缀</span><br><span class="line">location ~* \.(gif|jpg|png)$ &#123;</span><br><span class="line">  # 匹配以gif或者jpg或者png为结尾的路径</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># 6. 全部通配</span><br><span class="line">location / &#123;</span><br><span class="line">  # 匹配全部路径  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="五、Nginx负载均衡【重点】"><a href="#五、Nginx负载均衡【重点】" class="headerlink" title="五、Nginx负载均衡【重点】"></a>五、Nginx负载均衡【<code>重点</code>】</h3><hr>
+<blockquote>
+<p>Nginx为我们默认提供了三种负载均衡的策略：</p>
+<ul>
+<li><p>轮询：将客户端发起的请求，平均的分配给每一台服务器。</p>
+<ul>
+<li>权重：会将客户端的请求，根据服务器的权重值不同，分配不同的数量。</li>
+</ul>
+</li>
+<li><p>ip_hash：基于发起请求的客户端的ip地址不同，他始终会将请求发送到指定的服务器上。</p>
+</li>
+</ul>
+</blockquote>
+<h4 id="5-1-轮询"><a href="#5-1-轮询" class="headerlink" title="5.1 轮询"></a>5.1 轮询</h4><blockquote>
+<p>想实现Nginx轮询负载均衡机制只需要在配置文件中添加以下内容</p>
+</blockquote>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">upstream 名字 &#123;</span><br><span class="line">  server ip:port;</span><br><span class="line">  server ip:port;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br><span class="line">server &#123;</span><br><span class="line">  listen 80;</span><br><span class="line">  server_name localhost;</span><br><span class="line">  </span><br><span class="line">  location / &#123;</span><br><span class="line">    proxy_pass http://upstream的名字/;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="5-2-权重"><a href="#5-2-权重" class="headerlink" title="5.2 权重"></a>5.2 权重</h4><blockquote>
+<p>实现权重的方式</p>
+</blockquote>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">upstream 名字 &#123;</span><br><span class="line">  server ip:port weight=权重比例;</span><br><span class="line">  server ip:port weight=权重比例;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br><span class="line">server &#123;</span><br><span class="line">  listen 80;</span><br><span class="line">  server_name localhost;</span><br><span class="line">  </span><br><span class="line">  location / &#123;</span><br><span class="line">    proxy_pass http://upstream的名字/;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="5-3-ip-hash"><a href="#5-3-ip-hash" class="headerlink" title="5.3 ip_hash"></a>5.3 ip_hash</h4><blockquote>
+<p>ip_hash实现</p>
+</blockquote>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">upstream 名字 &#123;</span><br><span class="line">  ip_hash;</span><br><span class="line">  server ip:port;</span><br><span class="line">  server ip:port;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br><span class="line">server &#123;</span><br><span class="line">  listen 80;</span><br><span class="line">  server_name localhost;</span><br><span class="line">  </span><br><span class="line">  location / &#123;</span><br><span class="line">    proxy_pass http://upstream的名字/;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="六、Nginx动静分离【重点】"><a href="#六、Nginx动静分离【重点】" class="headerlink" title="六、Nginx动静分离【重点】"></a>六、Nginx动静分离【<code>重点</code>】</h3><hr>
+<blockquote>
+<p>Nginx的并发能力公式：</p>
+<p>​    worker_processes * worker_connections / 4 | 2 = Nginx最终的并发能力</p>
+<p>动态资源需要/4，静态资源需要/2.</p>
+<p>Nginx通过动静分离，来提升Nginx的并发能力，更快的给用户响应。</p>
+</blockquote>
+<h4 id="6-1-动态资源代理"><a href="#6-1-动态资源代理" class="headerlink" title="6.1 动态资源代理"></a>6.1 动态资源代理</h4><blockquote>
+<p>使用proxy_pass动态代理</p>
+</blockquote>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 配置如下</span><br><span class="line">location / &#123;</span><br><span class="line">  proxy_pass 路径;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="6-2-静态资源代理"><a href="#6-2-静态资源代理" class="headerlink" title="6.2 静态资源代理"></a>6.2 静态资源代理</h4><blockquote>
+<p>使用root静态代理</p>
+</blockquote>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 配置如下</span><br><span class="line">location / &#123;</span><br><span class="line">  root 静态资源路径;</span><br><span class="line">  index 默认访问路径下的什么资源;</span><br><span class="line">  autoindex on; # 代表展示静态资源全的全部内容，以列表的形式展开。</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># 先修改docker，添加一个数据卷，映射到Nginx服务器的一个目录</span><br><span class="line"># 添加了index.html和1.jpg静态资源</span><br><span class="line"># 修改配置文件</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="七、Nginx集群"><a href="#七、Nginx集群" class="headerlink" title="七、Nginx集群"></a>七、Nginx集群</h3><hr>
+<h4 id="7-1-集群结构"><a href="#7-1-集群结构" class="headerlink" title="7.1 集群结构"></a>7.1 集群结构</h4><blockquote>
+<p>单点故障，避免nginx的宕机，导致整个程序的崩溃</p>
+<p>准备多台Nginx。</p>
+<p>准备keepalived，监听nginx的健康情况。</p>
+<p>准备haproxy，提供一个虚拟的路径，统一的去接收用户得请求。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="center">Nginx集群</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="Pictures/1588755548570.png" alt="1588755548570"></td>
+</tr>
+</tbody></table>
+<h4 id="7-2-搭建Nginx集群"><a href="#7-2-搭建Nginx集群" class="headerlink" title="7.2 搭建Nginx集群"></a>7.2 搭建Nginx集群</h4><blockquote>
+<p>查看资料中的内容，直接通过运行docker-compose即可</p>
+</blockquote>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2020/09/22/Nginx/" data-id="ckfdz882a0000skqw9oim3ijl" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2020/09/22/SpringBoot/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Springboot总结</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/09/22/Nginx/">Nginx总结</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/22/SpringBoot/">Springboot总结</a>
+          </li>
+        
+          <li>
+            <a href="/2020/09/22/hello-world/">Hello JAVA HL</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
